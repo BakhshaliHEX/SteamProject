@@ -90,6 +90,8 @@ class Shop(Frame):
         codevien = Game(name="CodeVien", price=29.99, discount=85, description="Создайте своего бессмертного, найдите союзников и преодолейте испытания, чтобы вспомнить прошлое и вырваться из ада в игре CODE VEIN.", image=photos[4])
         arma = Game(name="Arma", price=29.99, discount=75, description="Испытайте вкус боевых действий в массовой военной игре. C более чем 20 видами техники и 40 видами оружия, различными режимами игры и безграничными возможностями создания контента, вы получаете наилучший реализм и разнообразие в Arma 3.", image=photos[5])
         battlefield = Game(name="Battlefield", price=59.99, discount=75, description="Вступайте в игровое сообщество Battlefield и откройте для себя зарю мировых войн в командных сетевых боях или в увлекательной одиночной кампании.", image=photos[6])
+
+        #Запись игр в файл
         with open("Files/gamesData.json", "w") as FileHandler:
             slov = {}
             for i in [darktide, division, ghostrecon, remnant, codevien, arma, battlefield]:
@@ -101,10 +103,13 @@ class Shop(Frame):
                     "image": i.image,
                 }
             json.dump(slov, FileHandler)
+
+        #Получение всех игр
         with open("Files/gamesData.json", "r") as FileHandler:
             classesDict = json.loads(FileHandler.readline())
 
-        classesList = []
+        #Добавление игр в лист
+        self.gamesList = []
         for key, val in classesDict.items():
             print(f"{key}")
             print(val["image"])
@@ -112,7 +117,11 @@ class Shop(Frame):
             img = ImageTk.PhotoImage(oldImg)
             val["image"] = img
 
-            classesList.append(val)
+            self.gamesList.append(val)
+
+        self.passedGameCount = 0
+        self.addSmallGames()
+
 
         # try:
         #     with open("Files/gamesData.json", "wb") as FileHandler:
@@ -129,44 +138,37 @@ class Shop(Frame):
             # json.dump(obj, FileHandler)
 
         canvasList = []
-        canvasTextList = []
-        posX = 0.035
-        positionForCanvasInfo = [posX]
+        # posX = 0.035
+        # positionForCanvasInfo = [posX]
         #371x241
-        gamesCount = 0
-        if len(classesList) <= 4:
-            gamesCount = len(classesList)
-        elif len(classesList) > 5 and len(classesList) <= 7:
-            # print(4)
-            ...
-        # for gameClass in range(4):
+        # gamesCount = 0
+        #
+        #
+        #
+        # for i in range(4):
         #     curClass = classesList[i]
         #     canvas = Canvas(self.master, width=274, height=186, bg=BG_COLOR, highlightthickness=0, cursor="hand2")
-        #     # canvas.create_image(0, 79, anchor=W, image=curClass.image)
-        #     canvas.image = curClass.image
-        #     titlePosX = 41
-        #     if len(curClass.name) > 8:
-        #         titlePosX = 54
-        #     textName = canvas.create_text(titlePosX, 171, text=curClass.name, fill="white", font="Arial 11 bold")
+        #     canvas.create_image(0, 79, anchor=W, image=curClass["image"])
+        #     canvas.image = curClass["image"]
+        #     textName = canvas.create_text(41, 171, text=curClass["name"], fill="white", font="Arial 11 bold", anchor=NW)
         #
-        #     if curClass.price == 0:
+        #     if curClass["price"] == 0:
         #         canvas.create_rectangle(160, 157, 274, 186, fill="#A1CD44")
         #         canvas.create_text(220, 171, text="Бесплатно", font="Arial 12 bold")
-        #     elif curClass.discount == 0:
+        #     elif curClass["discount"] == 0:
         #         canvas.create_rectangle(190, 157, 274, 186, fill="#A1CD44")
-        #         canvas.create_text(232, 171, text=f"${curClass.price}", font="Arial 12 bold")
+        #         canvas.create_text(232, 171, text=f"${curClass['price']}", font="Arial 12 bold")
         #     else:
         #         canvas.create_rectangle(213, 157, 274, 186, fill="#A1CD44")
-        #         canvas.create_text(244, 171, text=f"- {curClass.discount}%", font="Arial 12 bold")
-        #         canvas.create_text(185, 171, text=f"${curClass.price}", font="Arial 10 overstrike", fill="#808A8F")
-        #         canvas.create_text(137, 172, text=f"${round(float(curClass.price - (curClass.price * (curClass.discount/100))), 2)}", font="Arial 11 bold", fill="#ffffff")
+        #         canvas.create_text(244, 171, text=f"- {curClass['discount']}%", font="Arial 12 bold")
+        #         canvas.create_text(185, 171, text=f"${curClass['price']}", font="Arial 10 overstrike", fill="#808A8F")
+        #         canvas.create_text(137, 172, text=f"${round(float(curClass['price'] - (curClass['price'] * (curClass['discount']/100))), 2)}", font="Arial 11 bold", fill="#ffffff")
+        #
         #     canvas.place(relx=posX, rely=0.3)
         #     canvasList.append(canvas)
-        #     canvasTextList.append(textName)
         #     posX += 0.239
         #     positionForCanvasInfo.append(posX)
         # print(canvasList)
-        # print(canvasTextList)
         # # for i in range(4):
         # #     canvasList[i].bind("<Enter>", lambda event: self.inCanvas(gameClass=classesList[i], pos=positionForCanvasInfo[i]))
         # #     canvasList[i].bind("<Leave>", lambda event: self.outCanvas())
@@ -186,20 +188,108 @@ class Shop(Frame):
 
 
 
+    def addSmallGames(self):
+        # gamesCount = 4
+        # if len(self.gamesList) > 0:
+        #     if len(self.gamesList) < 4:
+        #         gamesCount = len(self.gamesList)
+        #
+        #     self.passedGameCount = gamesCount
+
+
+        posX = 0.035
+        self.canvasList = []
+        positionForCanvasInfo = [posX]
+        hasEndedGames = False
+
+        for i in range(4):
+            if i+1 > len(self.gamesList) - self.passedGameCount:
+                self.passedGameCount = len(self.gamesList)
+                hasEndedGames = True
+                break
+
+            curGame = self.gamesList[i]
+            #Создание канваса
+            canvas = Canvas(self.master, width=274, height=186, bg=BG_COLOR, highlightthickness=0, cursor="hand2")
+            canvas.create_image(0, 79, anchor=W, image=curGame["image"])
+            canvas.image = curGame["image"]
+            canvas.create_text(3, 163, text=curGame["name"], fill="white", font="Arial 11 bold", anchor=NW)
+
+            #Размещение всех комплектов канваса на канвас
+            if curGame["price"] == 0:
+                canvas.create_rectangle(160, 157, 274, 186, fill="#A1CD44")
+                canvas.create_text(220, 171, text="Бесплатно", font="Arial 12 bold")
+            elif curGame["discount"] == 0:
+                canvas.create_rectangle(190, 157, 274, 186, fill="#A1CD44")
+                canvas.create_text(232, 171, text=f"${curGame['price']}", font="Arial 12 bold")
+            else:
+                canvas.create_rectangle(213, 157, 274, 186, fill="#A1CD44")
+                canvas.create_text(244, 171, text=f"- {curGame['discount']}%", font="Arial 12 bold")
+                canvas.create_text(185, 171, text=f"${curGame['price']}", font="Arial 10 overstrike", fill="#808A8F")
+                canvas.create_text(137, 172, text=f"${round(float(curGame['price'] - (curGame['price'] * (curGame['discount'] / 100))), 2)}", font="Arial 11 bold", fill="#ffffff")
+
+            #Размещение канвасов на фрейм
+            canvas.place(relx=posX, rely=0.3)
+            self.canvasList.append(canvas)
+            posX += 0.239
+            positionForCanvasInfo.append(posX)
+
+        if not(hasEndedGames):
+            self.passedGameCount = 4
+
+        #Создание событий для наведения на канвас
+        self.canvasList[0].bind("<Enter>", lambda event: self.inCanvas(gameClass=self.gamesList[0], pos=positionForCanvasInfo[0]))
+        self.canvasList[0].bind("<Leave>", lambda event: self.outCanvas())
+        self.canvasList[1].bind("<Enter>", lambda event: self.inCanvas(gameClass=self.gamesList[1], pos=positionForCanvasInfo[1]))
+        self.canvasList[1].bind("<Leave>", lambda event: self.outCanvas())
+        self.canvasList[2].bind("<Enter>", lambda event: self.inCanvas(gameClass=self.gamesList[2], pos=positionForCanvasInfo[2]))
+        self.canvasList[2].bind("<Leave>", lambda event: self.outCanvas())
+        self.canvasList[3].bind("<Enter>", lambda event: self.inCanvas(gameClass=self.gamesList[3], pos=positionForCanvasInfo[3], isLast=True))
+        self.canvasList[3].bind("<Leave>", lambda event: self.outCanvas())
+
+        #Создание канваса при наведении на него
+        self.infoCanvas = Canvas(self.master, width=305, height=162, highlightthickness=0, background=BG_COLOR)
+        self.intoInfoCanvas = self.infoCanvas.create_rectangle(8, 0, 305, 269, fill="#CEDAE3")
+        self.infoCanvasPolygon = self.infoCanvas.create_polygon(0, 30, 10, 21, 10, 39, fill="#CEDAE3")
+        self.infoCanvasTitle = self.infoCanvas.create_text(22, 10, text="", font="Arial 15", fill="#4B5563", anchor=NW)
+        self.infoCanvasDescription = self.infoCanvas.create_text(23, 40, text="", font="Arial 9", fill="#778696", anchor=NW, width=260)
+
+    def addBigGames(self):
+        # gamesCount = 3
+        # if (len(self.gamesList) - self.passedGameCount) > 0:
+        #     if (len(self.gamesList) - self.passedGameCount) < 3:
+        #         gamesCount = (len(self.gamesList) - self.passedGameCount)
+        #
+        hasEndedGames = False
+
+        for i in range(3):
+            if i+1 > len(self.gamesList) - self.passedGameCount:
+                self.passedGameCount = len(self.gamesList)
+                hasEndedGames = True
+                break
+
+            curGame = self.gamesList[i]
+            # Создание канваса
+            canvas = Canvas(self.master, width=274, height=186, bg=BG_COLOR, highlightthickness=0, cursor="hand2")
+            canvas.create_image(0, 79, anchor=W, image=curGame["image"])
+            canvas.image = curGame["image"]
+            canvas.create_text(3, 163, text=curGame["name"], fill="white", font="Arial 11 bold", anchor=NW)
+
+        hasEndedGames = True
 
     def inCanvas(self, gameClass: Game, pos, isLast = False):
         if isLast:
             self.infoCanvas.place(relx=pos-0.245, rely=0.3)
             self.infoCanvas.coords(self.intoInfoCanvas, 0, 0, 297, 269)
             self.infoCanvas.coords(self.infoCanvasPolygon, 296, 39, 296, 21, 306, 30)
-            self.infoCanvas.itemconfigure(self.infoCanvasTitle, text=gameClass.name)
-            self.infoCanvas.itemconfigure(self.infoCanvasDescription, text=gameClass.description)
+            self.infoCanvas.itemconfigure(self.infoCanvasTitle, text=gameClass["name"])
+            self.infoCanvas.itemconfigure(self.infoCanvasDescription, text=gameClass["description"])
         else:
             self.infoCanvas.place(relx=pos+0.215, rely=0.3)
             self.infoCanvas.coords(self.intoInfoCanvas, 8, 0, 305, 269)
             self.infoCanvas.coords(self.infoCanvasPolygon, 0, 30, 10, 21, 10, 39)
-            self.infoCanvas.itemconfigure(self.infoCanvasTitle, text=gameClass.name)
-            self.infoCanvas.itemconfigure(self.infoCanvasDescription, text=gameClass.description)
+            self.infoCanvas.itemconfigure(self.infoCanvasTitle, text=gameClass["name"])
+            self.infoCanvas.itemconfigure(self.infoCanvasDescription, text=gameClass["description"])
     def outCanvas(self):
         self.infoCanvas.place_forget()
 
