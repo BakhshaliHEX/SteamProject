@@ -59,6 +59,7 @@ class Shop(Frame):
         self.widgets()
         self.setGames()
 
+
     def widgets(self):
         self.shopHeaderShopBtn = Button(self.master, text="МАГАЗИН", background=BG_COLOR, fg="#ffffff", borderwidth=0, font="Arial 16")
         self.shopHeaderLibraryBtn = Button(self.master, text="БИБЛИОТЕКА", background=BG_COLOR, fg="#ffffff", borderwidth=0, font="Arial 16")
@@ -87,9 +88,9 @@ class Shop(Frame):
         division = Game(name="Division", price=16.49, discount=70, description="ИСТОРИЯ НЕ ЗАБУДЕТ Tom Clancy’s The Division® 2: судьба мира зависит от вас Возглавьте отряд спецагентов и наведите порядок в Вашингтоне, пострадавшем от эпидемии.", image=photos[1])
         ghostrecon = Game(name="GhostRecon", price=0, discount=0, description="Станьте «Призраком» и победите других спецназовцев – «Волков» в обновленной игре серии Tom Clancy's Ghost Recon!", image=photos[2])
         remnant = Game(name="Remnant", price=18.49, discount=65, description="В роли одного из последних представителей человечества, в одиночку или в компании одного-двух товарищей, вам предстоит сразиться с ордами монстров и эпическими боссами, пытаясь закрепиться на чужой земле, отстроиться и вернуть себе утраченное.", image=photos[3])
-        codevien = Game(name="CodeVien", price=29.99, discount=85, description="Создайте своего бессмертного, найдите союзников и преодолейте испытания, чтобы вспомнить прошлое и вырваться из ада в игре CODE VEIN.", image=photos[4])
+        codevien = Game(name="CodeVien", price=0, discount=85, description="Создайте своего бессмертного, найдите союзников и преодолейте испытания, чтобы вспомнить прошлое и вырваться из ада в игре CODE VEIN.", image=photos[4])
         arma = Game(name="Arma", price=29.99, discount=75, description="Испытайте вкус боевых действий в массовой военной игре. C более чем 20 видами техники и 40 видами оружия, различными режимами игры и безграничными возможностями создания контента, вы получаете наилучший реализм и разнообразие в Arma 3.", image=photos[5])
-        battlefield = Game(name="Battlefield", price=59.99, discount=75, description="Вступайте в игровое сообщество Battlefield и откройте для себя зарю мировых войн в командных сетевых боях или в увлекательной одиночной кампании.", image=photos[6])
+        battlefield = Game(name="Battlefield", price=59.99, discount=0, description="Вступайте в игровое сообщество Battlefield и откройте для себя зарю мировых войн в командных сетевых боях или в увлекательной одиночной кампании.", image=photos[6])
 
         #Запись игр в файл
         with open("Files/gamesData.json", "w") as FileHandler:
@@ -113,15 +114,15 @@ class Shop(Frame):
         for key, val in classesDict.items():
             print(f"{key}")
             print(val["image"])
-            oldImg = Image.open(val["image"]).resize((274, 158))
-            img = ImageTk.PhotoImage(oldImg)
-            val["image"] = img
+            oldImg = Image.open(val["image"])
+            val["image"] = oldImg
 
             self.gamesList.append(val)
 
         self.passedGameCount = 0
         self.addSmallGames()
         self.addBigGames()
+        self.createHoverCanvas()
 
 
         # try:
@@ -137,8 +138,8 @@ class Shop(Frame):
             #     "image": str(division.image)
             # }
             # json.dump(obj, FileHandler)
-
-        canvasList = []
+        #
+        # canvasList = []
         # posX = 0.035
         # positionForCanvasInfo = [posX]
         #371x241
@@ -190,14 +191,6 @@ class Shop(Frame):
 
 
     def addSmallGames(self):
-        # gamesCount = 4
-        # if len(self.gamesList) > 0:
-        #     if len(self.gamesList) < 4:
-        #         gamesCount = len(self.gamesList)
-        #
-        #     self.passedGameCount = gamesCount
-
-
         posX = 0.035
         self.canvasList = []
         positionForCanvasInfo = [posX]
@@ -211,10 +204,16 @@ class Shop(Frame):
 
             curGame = self.gamesList[i + self.passedGameCount]
             #Создание канваса
+            print(self.gamesList)
+            print(curGame)
             canvas = Canvas(self.master, width=274, height=186, bg=BG_COLOR, highlightthickness=0, cursor="hand2")
-            canvas.create_image(0, 79, anchor=W, image=curGame["image"])
-            canvas.image = curGame["image"]
+            print(curGame["image"])
+            resImg = curGame["image"].resize((274, 158))
+            wholeImg = ImageTk.PhotoImage(resImg)
+            canvas.create_image(0, 79, anchor=W, image=wholeImg)
+            canvas.image = wholeImg
             canvas.create_text(3, 163, text=curGame["name"], fill="white", font="Arial 11 bold", anchor=NW)
+
 
             #Размещение всех комплектов канваса на канвас
             if curGame["price"] == 0:
@@ -238,25 +237,22 @@ class Shop(Frame):
             # canvas.bind("<Enter>", lambda event: self.inCanvas(gameClass=self.gamesList[i], pos=positionForCanvasInfo[0]))
             # canvas.bind("<Leave>", lambda event: self.outCanvas())
 
-        if not(hasEndedGames):
-            self.passedGameCount += 4
+        some = self.passedGameCount
 
         #Создание событий для наведения на канвас
-        self.canvasList[0].bind("<Enter>", lambda event: self.inCanvas(gameClass=self.gamesList[0], pos=positionForCanvasInfo[0]))
+        self.canvasList[0].bind("<Enter>", lambda event: self.inCanvas(gameClass=self.gamesList[some], pos=positionForCanvasInfo[0]))
         self.canvasList[0].bind("<Leave>", lambda event: self.outCanvas())
-        self.canvasList[1].bind("<Enter>", lambda event: self.inCanvas(gameClass=self.gamesList[1], pos=positionForCanvasInfo[1]))
+        self.canvasList[1].bind("<Enter>", lambda event: self.inCanvas(gameClass=self.gamesList[some + 1], pos=positionForCanvasInfo[1]))
         self.canvasList[1].bind("<Leave>", lambda event: self.outCanvas())
-        self.canvasList[2].bind("<Enter>", lambda event: self.inCanvas(gameClass=self.gamesList[2], pos=positionForCanvasInfo[2]))
+        self.canvasList[2].bind("<Enter>", lambda event: self.inCanvas(gameClass=self.gamesList[some + 2], pos=positionForCanvasInfo[2]))
         self.canvasList[2].bind("<Leave>", lambda event: self.outCanvas())
-        self.canvasList[3].bind("<Enter>", lambda event: self.inCanvas(gameClass=self.gamesList[3], pos=positionForCanvasInfo[3], isLast=True))
+        self.canvasList[3].bind("<Enter>", lambda event: self.inCanvas(gameClass=self.gamesList[some + 3], pos=positionForCanvasInfo[3], isLast=True))
         self.canvasList[3].bind("<Leave>", lambda event: self.outCanvas())
 
-        #Создание канваса при наведении на него
-        self.infoCanvas = Canvas(self.master, width=305, height=162, highlightthickness=0, background=BG_COLOR)
-        self.intoInfoCanvas = self.infoCanvas.create_rectangle(8, 0, 305, 269, fill="#CEDAE3")
-        self.infoCanvasPolygon = self.infoCanvas.create_polygon(0, 30, 10, 21, 10, 39, fill="#CEDAE3")
-        self.infoCanvasTitle = self.infoCanvas.create_text(22, 10, text="", font="Arial 15", fill="#4B5563", anchor=NW)
-        self.infoCanvasDescription = self.infoCanvas.create_text(23, 40, text="", font="Arial 9", fill="#778696", anchor=NW, width=260)
+        if not (hasEndedGames):
+            self.passedGameCount += 4
+
+
 
     def addBigGames(self):
         # gamesCount = 3
@@ -279,25 +275,25 @@ class Shop(Frame):
 
             curGame = self.gamesList[i + self.passedGameCount]
             # Создание канваса
-            canvas = Canvas(self.master, width=371, height=241, bg="#ffffff", highlightthickness=0, cursor="hand2")
-            canvas.create_image(0, 79, anchor=W, image=curGame["image"])
-            canvas.image = curGame["image"]
-            canvas.create_text(3, 163, text=f'{curGame["name"]}ff', fill="white", font="Arial 11 bold", anchor=NW)
+            canvas = Canvas(self.master, width=371, height=270, highlightthickness=0, cursor="hand2", background=BG_COLOR)
+            resImg = curGame["image"].resize((371, 241))
+            wholeImg = ImageTk.PhotoImage(resImg)
+            canvas.create_image(0, 0, anchor=NW, image=wholeImg)
+            canvas.image = wholeImg
+            canvas.create_text(3, 248, text=curGame["name"], fill="white", font="Arial 11 bold", anchor=NW)
 
             # Размещение всех комплектов канваса на канвас
             if curGame["price"] == 0:
-                canvas.create_rectangle(160, 157, 274, 186, fill="#A1CD44")
-                canvas.create_text(220, 171, text="Бесплатно", font="Arial 12 bold")
+                canvas.create_rectangle(256, 240, 370, 269, fill="#A1CD44")
+                canvas.create_text(315, 256, text="Бесплатно", font="Arial 12 bold")
             elif curGame["discount"] == 0:
-                canvas.create_rectangle(190, 157, 274, 186, fill="#A1CD44")
-                canvas.create_text(232, 171, text=f"${curGame['price']}", font="Arial 12 bold")
+                canvas.create_rectangle(286, 240, 370, 269, fill="#A1CD44")
+                canvas.create_text(327, 256, text=f"${curGame['price']}", font="Arial 12 bold")
             else:
-                canvas.create_rectangle(213, 157, 274, 186, fill="#A1CD44")
-                canvas.create_text(244, 171, text=f"- {curGame['discount']}%", font="Arial 12 bold")
-                canvas.create_text(185, 171, text=f"${curGame['price']}", font="Arial 10 overstrike", fill="#808A8F")
-                canvas.create_text(137, 172,
-                                   text=f"${round(float(curGame['price'] - (curGame['price'] * (curGame['discount'] / 100))), 2)}",
-                                   font="Arial 11 bold", fill="#ffffff")
+                canvas.create_rectangle(309, 240, 370, 269, fill="#A1CD44")
+                canvas.create_text(339, 256, text=f"- {curGame['discount']}%", font="Arial 12 bold")
+                canvas.create_text(280, 256, text=f"${curGame['price']}", font="Arial 10 overstrike", fill="#808A8F")
+                canvas.create_text(232, 257, text=f"${round(float(curGame['price'] - (curGame['price'] * (curGame['discount'] / 100))), 2)}", font="Arial 11 bold", fill="#ffffff")
 
             # Размещение канвасов на фрейм
             canvas.place(relx=posX, rely=0.6)
@@ -305,22 +301,65 @@ class Shop(Frame):
             posX += 0.321
             positionForCanvasInfo.append(posX)
 
-        if not(hasEndedGames):
+        print(f"ffff{self.passedGameCount}")
+        print(len(self.gamesList))
+        print(self.gamesList)
+
+        some = self.passedGameCount
+
+        # Создание событий для наведения на канвас
+        self.canvasList[0].bind("<Enter>", lambda event: self.inCanvas(gameClass=self.gamesList[some], pos=positionForCanvasInfo[0]+0.08, posY=0.6, isBig=True))
+        self.canvasList[0].bind("<Leave>", lambda event: self.outCanvas())
+        self.canvasList[1].bind("<Enter>", lambda event: self.inCanvas(gameClass=self.gamesList[some+1], pos=positionForCanvasInfo[1]+0.08, posY=0.6, isBig=True))
+        self.canvasList[1].bind("<Leave>", lambda event: self.outCanvas())
+        self.canvasList[2].bind("<Enter>", lambda event: self.inCanvas(gameClass=self.gamesList[some+2], pos=positionForCanvasInfo[2]-0.062, posY=0.6, isLast=True, isBig=True))
+        self.canvasList[2].bind("<Leave>", lambda event: self.outCanvas())
+
+        if not (hasEndedGames):
             self.passedGameCount += 3
 
-    def inCanvas(self, gameClass: Game, pos, isLast = False):
+    def createHoverCanvas(self):
+        # Создание канваса при наведении на него
+        self.infoCanvas = Canvas(self.master, width=305, height=162, highlightthickness=0, background=BG_COLOR)
+        self.intoInfoCanvas = self.infoCanvas.create_rectangle(8, 0, 305, 269, fill="#CEDAE3", outline=BG_COLOR)
+        self.infoCanvasPolygon = self.infoCanvas.create_polygon(0, 30, 10, 21, 10, 39, fill="#CEDAE3")
+        self.infoCanvasTitle = self.infoCanvas.create_text(22, 10, text="", font="Arial 15", fill="#4B5563", anchor=NW)
+        self.infoCanvasDescription = self.infoCanvas.create_text(23, 40, text="", font="Arial 9", fill="#778696", anchor=NW, width=260)
+
+    def inCanvas(self, gameClass, pos, isLast = False, posY = 0.3, isBig = False):
         if isLast:
-            self.infoCanvas.place(relx=pos-0.245, rely=0.3)
+            self.infoCanvas.place(relx=pos-0.245, rely=posY)
             self.infoCanvas.coords(self.intoInfoCanvas, 0, 0, 297, 269)
             self.infoCanvas.coords(self.infoCanvasPolygon, 296, 39, 296, 21, 306, 30)
             self.infoCanvas.itemconfigure(self.infoCanvasTitle, text=gameClass["name"])
             self.infoCanvas.itemconfigure(self.infoCanvasDescription, text=gameClass["description"])
         else:
-            self.infoCanvas.place(relx=pos+0.215, rely=0.3)
+            self.infoCanvas.place(relx=pos+0.215, rely=posY)
             self.infoCanvas.coords(self.intoInfoCanvas, 8, 0, 305, 269)
             self.infoCanvas.coords(self.infoCanvasPolygon, 0, 30, 10, 21, 10, 39)
             self.infoCanvas.itemconfigure(self.infoCanvasTitle, text=gameClass["name"])
             self.infoCanvas.itemconfigure(self.infoCanvasDescription, text=gameClass["description"])
+
+        if isBig:
+            self.infoCanvas.config(width=393, height=190)
+            self.infoCanvas.itemconfigure(self.infoCanvasDescription, font="Arial 11", width=350)
+            self.infoCanvas.itemconfigure(self.infoCanvasTitle, font="Arial 18")
+            self.infoCanvas.coords(self.infoCanvasDescription, 23, 47)
+            if isLast:
+                self.infoCanvas.coords(self.intoInfoCanvas, 0, 0, 380, 269)
+                self.infoCanvas.coords(self.infoCanvasPolygon, 379, 39, 379, 21, 389, 30)
+            else:
+                self.infoCanvas.coords(self.intoInfoCanvas, 8, 0, 392, 269)
+                self.infoCanvas.coords(self.infoCanvasPolygon, 0, 30, 10, 21, 10, 39)
+        else:
+            self.infoCanvas.config(width=305, height=162)
+            self.infoCanvas.itemconfigure(self.infoCanvasDescription, font="Arial 9", width=260)
+            self.infoCanvas.itemconfigure(self.infoCanvasTitle, font="Arial 15")
+            self.infoCanvas.coords(self.intoInfoCanvas, 8, 0, 305, 269)
+            self.infoCanvas.coords(self.infoCanvasDescription, 23, 40)
+            if isLast: self.infoCanvas.coords(self.intoInfoCanvas, 0, 0, 297, 269)
+
+
     def outCanvas(self):
         self.infoCanvas.place_forget()
 
