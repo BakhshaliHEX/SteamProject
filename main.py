@@ -3,6 +3,7 @@ from tkinter.messagebox import *
 from PIL import Image, ImageTk
 from pickle import *
 import json
+from tkinter import ttk
 
 BG_COLOR = "#171D25"
 
@@ -48,28 +49,12 @@ def getPhotos():
 
 
 
-class Shop(Frame):
-    def __init__(self, master: Tk):
-        super().__init__(master)
+class Shop:
+    def __init__(self, master: Frame):
         self.master = master
-        self.master.geometry("1284x798+160+20")
-        self.master.resizable(False, False)
-        self.master.config(background=BG_COLOR)
 
-        self.widgets()
+
         self.setGames()
-
-
-    def widgets(self):
-        self.shopHeaderShopBtn = Button(self.master, text="МАГАЗИН", background=BG_COLOR, fg="#ffffff", borderwidth=0, font="Arial 16")
-        self.shopHeaderLibraryBtn = Button(self.master, text="БИБЛИОТЕКА", background=BG_COLOR, fg="#ffffff", borderwidth=0, font="Arial 16")
-        self.shopHeaderOfficeBtn = Button(self.master, text="USER", background=BG_COLOR, fg="#ffffff", borderwidth=0, font="Arial 16 underline")
-
-        self.shopHeaderShopBtn.place(relx=0.35, rely=0.03)
-        self.shopHeaderLibraryBtn.place(relx=0.45, rely=0.03)
-        self.shopHeaderOfficeBtn.place(relx=0.585, rely=0.03)
-        for i in range(3): self.master.columnconfigure(index=i, weight=1)
-        activeBtnUnderline(self.shopHeaderShopBtn, self.shopHeaderOfficeBtn)
 
 
         # smrSaleImg = Image.open("images/summerSale.png")
@@ -229,7 +214,7 @@ class Shop(Frame):
                 canvas.create_text(137, 172, text=f"${round(float(curGame['price'] - (curGame['price'] * (curGame['discount'] / 100))), 2)}", font="Arial 11 bold", fill="#ffffff")
 
             #Размещение канвасов на фрейм
-            canvas.place(relx=posX, rely=0.3)
+            canvas.place(relx=posX, rely=0.15)
             self.canvasList.append(canvas)
             posX += 0.239
             positionForCanvasInfo.append(posX)
@@ -296,7 +281,7 @@ class Shop(Frame):
                 canvas.create_text(232, 257, text=f"${round(float(curGame['price'] - (curGame['price'] * (curGame['discount'] / 100))), 2)}", font="Arial 11 bold", fill="#ffffff")
 
             # Размещение канвасов на фрейм
-            canvas.place(relx=posX, rely=0.6)
+            canvas.place(relx=posX, rely=0.45)
             self.canvasList.append(canvas)
             posX += 0.321
             positionForCanvasInfo.append(posX)
@@ -308,11 +293,11 @@ class Shop(Frame):
         some = self.passedGameCount
 
         # Создание событий для наведения на канвас
-        self.canvasList[0].bind("<Enter>", lambda event: self.inCanvas(gameClass=self.gamesList[some], pos=positionForCanvasInfo[0]+0.08, posY=0.6, isBig=True))
+        self.canvasList[0].bind("<Enter>", lambda event: self.inCanvas(gameClass=self.gamesList[some], pos=positionForCanvasInfo[0]+0.08, posY=0.45, isBig=True))
         self.canvasList[0].bind("<Leave>", lambda event: self.outCanvas())
-        self.canvasList[1].bind("<Enter>", lambda event: self.inCanvas(gameClass=self.gamesList[some+1], pos=positionForCanvasInfo[1]+0.08, posY=0.6, isBig=True))
+        self.canvasList[1].bind("<Enter>", lambda event: self.inCanvas(gameClass=self.gamesList[some+1], pos=positionForCanvasInfo[1]+0.08, posY=0.45, isBig=True))
         self.canvasList[1].bind("<Leave>", lambda event: self.outCanvas())
-        self.canvasList[2].bind("<Enter>", lambda event: self.inCanvas(gameClass=self.gamesList[some+2], pos=positionForCanvasInfo[2]-0.062, posY=0.6, isLast=True, isBig=True))
+        self.canvasList[2].bind("<Enter>", lambda event: self.inCanvas(gameClass=self.gamesList[some+2], pos=positionForCanvasInfo[2]-0.062, posY=0.45, isLast=True, isBig=True))
         self.canvasList[2].bind("<Leave>", lambda event: self.outCanvas())
 
         if not (hasEndedGames):
@@ -326,7 +311,7 @@ class Shop(Frame):
         self.infoCanvasTitle = self.infoCanvas.create_text(22, 10, text="", font="Arial 15", fill="#4B5563", anchor=NW)
         self.infoCanvasDescription = self.infoCanvas.create_text(23, 40, text="", font="Arial 9", fill="#778696", anchor=NW, width=260)
 
-    def inCanvas(self, gameClass, pos, isLast = False, posY = 0.3, isBig = False):
+    def inCanvas(self, gameClass, pos, isLast = False, posY = 0.15, isBig = False):
         if isLast:
             self.infoCanvas.place(relx=pos-0.245, rely=posY)
             self.infoCanvas.coords(self.intoInfoCanvas, 0, 0, 297, 269)
@@ -359,15 +344,92 @@ class Shop(Frame):
             self.infoCanvas.coords(self.infoCanvasDescription, 23, 40)
             if isLast: self.infoCanvas.coords(self.intoInfoCanvas, 0, 0, 297, 269)
 
-
     def outCanvas(self):
         self.infoCanvas.place_forget()
 
 
+class Account:
+    def __init__(self, master: Frame):
+        self.master = master
 
+        self.widgets()
+
+
+    def widgets(self):
+        imgCanvas = Canvas(self.master, width=1284, height=718, background="#ff0000", highlightthickness=0)
+        oldImg = Image.open("images/userBackPhone.png").resize((1288, 798))
+        myImg = ImageTk.PhotoImage(oldImg)
+        imgCanvas.create_image(0, -2, anchor=NW, image=myImg)
+        imgCanvas.image = myImg
+
+        imgCanvas.place(relx=0, rely=0)
+        # a.image = myImg
+        # oldImg = Image.open("images/userBackPhone.png").resize((1288, 798))
+        # myImg = ImageTk.PhotoImage(oldImg)
+        # imgLbl = Label(self.master, image=myImg)
+        # imgLbl.image = myImg
+        # imgLbl.place(relx=-0.005, rely=0)
+        LOG_BG_COLOR = "#212429"
+        LOG_TEXT_COLOR = "#B8B6B4"
+        LOG_BG_COLOR_ENTRY = "#32353C"
+        Label(self.master, text="СОЗДАНИЕ АККАУНТА", font="Arial 25", fg="#ffffff", anchor=NW, background=LOG_BG_COLOR).place(relx=0.2, rely=0.1)
+        Label(self.master, text="Ваше имя", font="Arial 11", fg=LOG_TEXT_COLOR, anchor=NW, background=LOG_BG_COLOR). place(relx=0.2, rely=0.2)
+        self.emailEntry = Entry(self.master, width=30, font="Arial 13", fg="#ffffff", background="#32353C", border=0)
+        self.emailEntry.place(relx=0.2, rely=0.236, height=35)
+        Label(self.master, text="Ваше игровое имя", font="Arial 11", fg=LOG_TEXT_COLOR, anchor=NW, background=LOG_BG_COLOR).place(relx=0.2, rely=0.35)
+        self.emailConfirmEntry = Entry(self.master, width=30, font="Arial 13", fg="#ffffff", background="#32353C", border=0)
+        self.emailConfirmEntry.place(relx=0.2, rely=0.386, height=35)
+        Label(self.master, text="Адрес эл. почты", font="Arial 11", fg=LOG_TEXT_COLOR, anchor=NW, background=LOG_BG_COLOR).place(relx=0.2, rely=0.486)
+        gender = StringVar(value="male")
+
+        genderCanvas = Canvas(self.master, width=350, height=40, background=LOG_BG_COLOR, highlightthickness=2, highlightbackground=LOG_BG_COLOR_ENTRY)
+        genderCanvas.place(relx=0.2, rely=0.5232)
+
+        self.maleRadioBtn = Radiobutton(self.master, text="Мужчина", value="male", variable=gender, background=LOG_BG_COLOR, fg="#ffffff", font="Arial 10")
+        self.femaleRadioBtn = Radiobutton(self.master, text="Женщина", value="female", variable=gender, background=LOG_BG_COLOR, fg="#ffffff", font="Arial 10")
+        self.maleRadioBtn.place(relx=0.23, rely=0.53, height=35)
+        self.femaleRadioBtn.place(relx=0.38, rely=0.53, height=35)
+        Label(self.master, text="Адрес эл. почты", font="Arial 11", fg=LOG_TEXT_COLOR, anchor=NW, background=LOG_BG_COLOR).place(relx=0.6, rely=0.2)
+        self.emailConfirmEntry = Entry(self.master, width=30, font="Arial 13", fg="#ffffff", background="#32353C", border=0)
+        self.emailConfirmEntry.place(relx=0.6, rely=0.236, height=35)
+        Label(self.master, text="Пароль", font="Arial 11", fg=LOG_TEXT_COLOR, anchor=NW, background=LOG_BG_COLOR).place(relx=0.6, rely=0.35)
+        self.emailConfirmEntry = Entry(self.master, width=30, font="Arial 13", fg="#ffffff", background="#32353C", border=0)
+        self.emailConfirmEntry.place(relx=0.6, rely=0.386, height=35)
+        Label(self.master, text="Подтвердите пароль", font="Arial 11", fg=LOG_TEXT_COLOR, anchor=NW, background=LOG_BG_COLOR).place(relx=0.6, rely=0.5)
+        self.emailConfirmEntry = Entry(self.master, width=30, font="Arial 13", fg="#ffffff", background="#32353C", border=0)
+        self.emailConfirmEntry.place(relx=0.6, rely=0.536, height=35)
+
+        captchaCanvas = Canvas(self.master, width=300, height=78, background="#222222", highlightthickness=1, highlightbackground=LOG_TEXT_COLOR)
+        captchaCanvas.create_text(30, 40, text="Я не робот", anchor=NW)
+        captchaCanvas.place(relx=0.2, rely=0.6)
+
+def turnOnUser():
+    shopFrame.place_forget()
+    logFrame.place(relx=0, rely=0.1)
+    account = Account(logFrame)
+
+def turnOnShop():
+    logFrame.place_forget()
+    shopFrame.place(relx=0, rely=0.1)
 
 
 if __name__ == '__main__':
     shopRoot = Tk()
-    shop = Shop(shopRoot)
-    shop.mainloop()
+    shopRoot.geometry("1284x798+160+20")
+    shopRoot.resizable(False, False)
+    shopRoot.config(background=BG_COLOR)
+    shopFrame = Frame(shopRoot, width=1284, height=718, background=BG_COLOR)
+    logFrame = Frame(shopRoot, width=1284, height=718, background=BG_COLOR)
+    shopFrame.place(relx=0, rely=0.1)
+
+    #Добавление кнопок на шапку программы
+    shopHeaderShopBtn = Button(shopRoot, text="МАГАЗИН", background=BG_COLOR, fg="#ffffff", borderwidth=0, font="Arial 16", command=turnOnShop)
+    shopHeaderLibraryBtn = Button(shopRoot, text="БИБЛИОТЕКА", background=BG_COLOR, fg="#ffffff", borderwidth=0, font="Arial 16")
+    shopHeaderOfficeBtn = Button(shopRoot, text="USER", background=BG_COLOR, fg="#ffffff", borderwidth=0, font="Arial 16 underline", command=turnOnUser)
+
+    shopHeaderShopBtn.place(relx=0.35, rely=0.03)
+    shopHeaderLibraryBtn.place(relx=0.45, rely=0.03)
+    shopHeaderOfficeBtn.place(relx=0.585, rely=0.03)
+    activeBtnUnderline(shopHeaderShopBtn, shopHeaderOfficeBtn)
+    shop = Shop(shopFrame)
+    shopRoot.mainloop()
