@@ -348,7 +348,7 @@ class Shop:
         self.infoCanvas.place_forget()
 
 
-class Account:
+class Registration:
     def __init__(self, master: Frame):
         self.master = master
 
@@ -374,39 +374,112 @@ class Account:
         LOG_BG_COLOR_ENTRY = "#32353C"
         Label(self.master, text="СОЗДАНИЕ АККАУНТА", font="Arial 25", fg="#ffffff", anchor=NW, background=LOG_BG_COLOR).place(relx=0.2, rely=0.1)
         Label(self.master, text="Ваше имя", font="Arial 11", fg=LOG_TEXT_COLOR, anchor=NW, background=LOG_BG_COLOR). place(relx=0.2, rely=0.2)
-        self.emailEntry = Entry(self.master, width=30, font="Arial 13", fg="#ffffff", background="#32353C", border=0)
-        self.emailEntry.place(relx=0.2, rely=0.236, height=35)
+        self.nameEntry = Entry(self.master, width=30, font="Arial 13", fg="#ffffff", background="#32353C", border=0)
+        self.nameEntry.place(relx=0.2, rely=0.236, height=35)
         Label(self.master, text="Ваше игровое имя", font="Arial 11", fg=LOG_TEXT_COLOR, anchor=NW, background=LOG_BG_COLOR).place(relx=0.2, rely=0.35)
-        self.emailConfirmEntry = Entry(self.master, width=30, font="Arial 13", fg="#ffffff", background="#32353C", border=0)
-        self.emailConfirmEntry.place(relx=0.2, rely=0.386, height=35)
-        Label(self.master, text="Адрес эл. почты", font="Arial 11", fg=LOG_TEXT_COLOR, anchor=NW, background=LOG_BG_COLOR).place(relx=0.2, rely=0.486)
-        gender = StringVar(value="male")
+        self.gameNameEntry = Entry(self.master, width=30, font="Arial 13", fg="#ffffff", background="#32353C", border=0)
+        self.gameNameEntry.place(relx=0.2, rely=0.386, height=35)
+        Label(self.master, text="Пол", font="Arial 11", fg=LOG_TEXT_COLOR, anchor=NW, background=LOG_BG_COLOR).place(relx=0.2, rely=0.486)
 
+        self.gender = StringVar(value="male")
         genderCanvas = Canvas(self.master, width=350, height=40, background=LOG_BG_COLOR, highlightthickness=2, highlightbackground=LOG_BG_COLOR_ENTRY)
         genderCanvas.place(relx=0.2, rely=0.5232)
 
-        self.maleRadioBtn = Radiobutton(self.master, text="Мужчина", value="male", variable=gender, background=LOG_BG_COLOR, fg="#ffffff", font="Arial 10")
-        self.femaleRadioBtn = Radiobutton(self.master, text="Женщина", value="female", variable=gender, background=LOG_BG_COLOR, fg="#ffffff", font="Arial 10")
+        self.maleRadioBtn = Radiobutton(self.master, text="Мужчина", value="male", variable=self.gender, background=LOG_BG_COLOR, fg="#ffffff", font="Arial 10")
+        self.femaleRadioBtn = Radiobutton(self.master, text="Женщина", value="female", variable=self.gender, background=LOG_BG_COLOR, fg="#ffffff", font="Arial 10")
         self.maleRadioBtn.place(relx=0.23, rely=0.53, height=35)
         self.femaleRadioBtn.place(relx=0.38, rely=0.53, height=35)
         Label(self.master, text="Адрес эл. почты", font="Arial 11", fg=LOG_TEXT_COLOR, anchor=NW, background=LOG_BG_COLOR).place(relx=0.6, rely=0.2)
-        self.emailConfirmEntry = Entry(self.master, width=30, font="Arial 13", fg="#ffffff", background="#32353C", border=0)
-        self.emailConfirmEntry.place(relx=0.6, rely=0.236, height=35)
+        self.emailEntry = Entry(self.master, width=30, font="Arial 13", fg="#ffffff", background="#32353C", border=0)
+        self.emailEntry.place(relx=0.6, rely=0.236, height=35)
         Label(self.master, text="Пароль", font="Arial 11", fg=LOG_TEXT_COLOR, anchor=NW, background=LOG_BG_COLOR).place(relx=0.6, rely=0.35)
-        self.emailConfirmEntry = Entry(self.master, width=30, font="Arial 13", fg="#ffffff", background="#32353C", border=0)
-        self.emailConfirmEntry.place(relx=0.6, rely=0.386, height=35)
+        self.passwordEntry = Entry(self.master, width=30, font="Arial 13", fg="#ffffff", background="#32353C", border=0)
+        self.passwordEntry.place(relx=0.6, rely=0.386, height=35)
         Label(self.master, text="Подтвердите пароль", font="Arial 11", fg=LOG_TEXT_COLOR, anchor=NW, background=LOG_BG_COLOR).place(relx=0.6, rely=0.5)
-        self.emailConfirmEntry = Entry(self.master, width=30, font="Arial 13", fg="#ffffff", background="#32353C", border=0)
-        self.emailConfirmEntry.place(relx=0.6, rely=0.536, height=35)
+        self.passwordConfirmEntry = Entry(self.master, width=30, font="Arial 13", fg="#ffffff", background="#32353C", border=0)
+        self.passwordConfirmEntry.place(relx=0.6, rely=0.536, height=35)
 
-        captchaCanvas = Canvas(self.master, width=300, height=78, background="#222222", highlightthickness=1, highlightbackground=LOG_TEXT_COLOR)
-        captchaCanvas.create_text(30, 40, text="Я не робот", anchor=NW)
+        captchaCanvas = Canvas(self.master, width=280, height=78, background="#222222", highlightthickness=1, highlightbackground=LOG_TEXT_COLOR)
+        self.captchaValue = IntVar()
+        captchaCheckBox = Checkbutton(self.master, variable=self.captchaValue, text="Я не робот", fg="#ffffff", background="#222222", font="Arial 12", border=0, borderwidth=0)
+        img = ImageTk.PhotoImage(Image.open("images/captcha.png").resize((35, 35)))
+        captchaCanvas.create_image(240, 32, image=img)
+        captchaCanvas.image = img
+        captchaCheckBox.place(relx=0.22, rely=0.636)
         captchaCanvas.place(relx=0.2, rely=0.6)
+        captchaCanvas.create_text(240, 60, text="reCaptcha", fill="#ffffff")
+
+        self.confirmCheckValue = IntVar()
+        self.confirmCheckBtn = Checkbutton(self.master, variable=self.confirmCheckValue, font="Arial 10", background=LOG_BG_COLOR, text="Я подтверждаю, что мне исполнилось 13 лет, и соглашаюсь с условиями соглашения подписчика Steam и политикой конфиденциальности Valve.", fg="#ffffff")
+        self.confirmCheckBtn.place(relx=0.2, rely=0.73)
+
+        btnImg = ImageTk.PhotoImage(Image.open("images/buttonGradient.png").resize((900, 35)))
+        self.confirmBtn = Button(self.master, image=btnImg, font="Arial 11", border=0, borderwidth=0, width=900, height=35, fg="#000000", command=self.register)
+        Label(self.master, text="Зарегистрироваться", fg="#ffffff", font="Arial 11", background="#4B90E5").place(relx=0.48, rely=0.83)
+        self.confirmBtn.image = btnImg
+        self.confirmBtn.place(relx=0.2, rely=0.82)
+
+    def checkEntries(self, value, valueInStr, minL, maxL):
+        if len(value) < 4 or len(value) > 18:
+            showerror("Ошибка", f"Количество символов в {valueInStr} должно быть больше {minL} и меньше {maxL}.")
+            return True
+        return False
+
+    def register(self):
+        name = self.nameEntry.get()
+        gameName = self.gameNameEntry.get()
+        gender = self.gender.get()
+        email = self.emailEntry.get()
+        password = self.passwordEntry.get()
+        confirmPassword = self.passwordConfirmEntry.get()
+        captchaVal = self.captchaValue.get()
+        yearVal = self.confirmCheckValue.get()
+
+
+        if self.checkEntries(name, "имени", 4, 18): return
+        if self.checkEntries(gameName, "нике", 4, 24): return
+        if self.checkEntries(email, "адресе эл. почты", 4, 32): return
+        if not("@gmail.com" in email) and not("@mail.ru" in email):
+            showerror("Ошибка", "В адресе эл. почты должны присутствовать домены.")
+            return
+
+        if self.checkEntries(password, "пароле", 4, 32): return
+
+        if confirmPassword != password:
+            showerror("Ошибка", "Пароли не совпадают.")
+            return
+
+        if not(captchaVal):
+            showerror("Ошибка", "Вы должны подтвердить, что вы не робот.")
+            return
+
+        if not(yearVal):
+            showerror("Ошибка", "Вы должны согласиться с условиями выше.")
+            return
+
+class Profile:
+    def __init__(self, master: Frame, congrat = None):
+        self.master = master
+        self.widgets()
+
+        if congrat:
+            canvas = Canvas(self.master, width=500, height=300, background="#222222")
+            canvas.create_text(text="Поздравления", fill="Arial 15")
+
+
+    def widgets(self):
+        ...
+
+
+
+
+
+
 
 def turnOnUser():
     shopFrame.place_forget()
     logFrame.place(relx=0, rely=0.1)
-    account = Account(logFrame)
+    account = Registration(logFrame)
 
 def turnOnShop():
     logFrame.place_forget()
