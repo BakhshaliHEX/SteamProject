@@ -464,6 +464,13 @@ class Registration:
         regFrame.place(relx=0, rely=0.1)
         if shopHeaderOfficeBtn["text"] == "USER":
             self.widgets()
+        else:
+            with open("Files/usersData.json", "r") as FileHandler:
+                usersData = json.loads(FileHandler.readline())
+                for key, val in usersData.items():
+                    if shopHeaderOfficeBtn["text"].lower() == key.lower():
+                        turnOnProf(val)
+                        break
 
 
     def widgets(self):
