@@ -1,5 +1,7 @@
 from tkinter import *
 from tkinter.messagebox import *
+from tkinter.messagebox import showinfo
+
 from PIL import Image, ImageTk
 from pickle import *
 import json
@@ -56,6 +58,7 @@ class Shop:
         logFrame.place_forget()
         regFrame.place_forget()
         gameViewFrame.place_forget()
+        editProfileFrame.place_forget()
         shopFrame.place(relx=0, rely=0.1)
 
 
@@ -82,18 +85,19 @@ class Shop:
         arma = Game(name="Arma", price=29.99, discount=75, description="Испытайте вкус боевых действий в массовой военной игре. C более чем 20 видами техники и 40 видами оружия, различными режимами игры и безграничными возможностями создания контента, вы получаете наилучший реализм и разнообразие в Arma 3.", image=photos[5])
         battlefield = Game(name="Battlefield", price=59.99, discount=0, description="Вступайте в игровое сообщество Battlefield и откройте для себя зарю мировых войн в командных сетевых боях или в увлекательной одиночной кампании.", image=photos[6])
 
-        #Запись игр в файл
-        with open("Files/gamesData.json", "w") as FileHandler:
-            slov = {}
-            for i in [darktide, division, ghostrecon, remnant, codevien, arma, battlefield]:
-                slov[i.name] = {
-                    "name": i.name,
-                    "price": i.price,
-                    "discount": i.discount,
-                    "description": i.description,
-                    "image": i.image,
-                }
-            json.dump(slov, FileHandler)
+        # #Запись игр в файл
+        # with open("Files/gamesData.json", "w") as FileHandler:
+        #     slov = {}
+        #     for i in [darktide, division, ghostrecon, remnant, codevien, arma, battlefield]:
+        #         slov[i.name] = {
+        #             "name": i.name,
+        #             "price": i.price,
+        #             "discount": i.discount,
+        #             "description": i.description,
+        #             "image": i.image,
+        #             "purchase": 0
+        #         }
+        #     json.dump(slov, FileHandler)
 
         #Получение всех игр
         with open("Files/gamesData.json", "r") as FileHandler:
@@ -368,6 +372,7 @@ class GameView:
         shopFrame.place_forget()
         regFrame.place_forget()
         profFrame.place_forget()
+        editProfileFrame.place_forget()
         gameViewFrame.place(relx=0, rely=0.1)
 
         self.master = master
@@ -393,6 +398,25 @@ class GameView:
     def basket(self):
         if shopHeaderOfficeBtn["text"] == "USER":
             showerror("Ошибка", "Вы должны зайти в аккаунт, чтобы купить игру.")
+        else:
+            with open("Files/usersData.json", "r") as FileHandler:
+                usersData = json.loads(FileHandler.readline())
+
+            try:
+                with open("Files/usersData.json", "wb") as FileHandler:
+                    json.dump({}, FileHandler)
+            except Exception as e:
+                print("Файл очистился.")
+
+            with open("Files/usersData.json", "w") as FileHandler:
+                for key, val in usersData.items():
+                    if key.lower() == shopHeaderOfficeBtn["text"].lower():
+                        if not(self.game["name"] in usersData[key]["games"]):
+                            usersData[key]["games"].append(self.game["name"])
+                            showinfo("Успешно!", "Вы успешно купили игру.")
+                        else:
+                            showerror("Ошибка", "У вас уже имеется эта игра.")
+                        json.dump(usersData, FileHandler)
 
 
 class Login:
@@ -403,6 +427,7 @@ class Login:
         shopFrame.place_forget()
         gameViewFrame.place_forget()
         profFrame.place_forget()
+        editProfileFrame.place_forget()
         logFrame.place(relx=0, rely=0.1)
 
 
@@ -461,6 +486,7 @@ class Registration:
         profFrame.place_forget()
         logFrame.place_forget()
         gameViewFrame.place_forget()
+        editProfileFrame.place_forget()
         regFrame.place(relx=0, rely=0.1)
         if shopHeaderOfficeBtn["text"] == "USER":
             self.widgets()
@@ -604,12 +630,16 @@ class Registration:
 
 class Profile:
     def __init__(self, master: Frame, account, isCong = False):
+        self.passedGameCount = 0
+        self.gamesList = []
+        self.hasMoreGames = False
         self.master = master
         self.account = account
         shopFrame.place_forget()
         regFrame.place_forget()
         logFrame.place_forget()
         gameViewFrame.place_forget()
+        editProfileFrame.place_forget()
         if shopHeaderOfficeBtn["text"] == "USER":
             shopHeaderOfficeBtn.config(text=account["gameName"].upper())
         profFrame.place(relx=0, rely=0.1)
@@ -632,11 +662,11 @@ class Profile:
 
     def widgets(self):
         self.mainCanvas = Canvas(self.master, width=950, height=718, background="#001021", highlightthickness=0)
-        self.mainCanvas.place(relx=0.2, rely=0)
+        self.mainCanvas.place(relx=0.14, rely=0)
         TEXT_COLOR = "#B8B6B4"
 
-        borderCanvas = Canvas(self.master, width=450, height=200, background="#001021", highlightthickness=1, highlightcolor=TEXT_COLOR)
-        borderCanvas.place(relx=0.58, rely=0.02)
+        borderCanvas = Canvas(self.master, width=450, height=200, background="#2b2d42", highlightthickness=1, highlightcolor=TEXT_COLOR)
+        borderCanvas.place(relx=0.52, rely=0.02)
 
         self.mainCanvas.create_rectangle(20, 20, 180, 180, fill="#ffff00")
         self.mainCanvas.create_text(200, 30, text=self.account["gameName"], anchor=NW, font="Arial 16 bold", fill="#ffffff")
@@ -650,11 +680,117 @@ class Profile:
         borderCanvas.create_text(70, 130, text=self.account["email"], anchor=NW, font="Arial 12", fill="#ffffff")
         borderCanvas.create_text(10, 160, text="Пароль:", anchor=NW, font="Arial 13", fill=TEXT_COLOR)
         borderCanvas.create_text(80, 160, text=self.account["password"], anchor=NW, font="Arial 12", fill="#ffffff")
-        Button(self.master, width=15, height=2, text="Редактировать")
+
+        Button(self.master, width=15, height=2, text="Редактировать", background="#2C4251", fg="#ffffff", border=0, command=self.editProf).place(relx=0.3, rely=0.196)
+
+        self.mainCanvas.create_text(20, 250, text="ИГРЫ", font="Arial 27", fill="#ffffff", anchor=NW)
+
+        self.mainCanvas.create_rectangle(44, 308, 647, 689, fill="#001021", outline="#ff0000")
+        if len(self.account["games"]) > 3:
+            Button(self.master, width=3, height=1, border=0, background="#001021", fg="#ffffff", text="<--").place(relx=0.15, rely=0.65)
+            Button(self.master, width=3, height=1, border=0, background="#001021", fg="#ffffff", text="-->", command=self.addGames).place(relx=0.65, rely=0.65)
+            self.hasMoreGames = True
+        elif len(self.account["games"]) == 0:
+            self.mainCanvas.create_text(60, 390, text="У вас нет игр.", font="Arial 20", fill=TEXT_COLOR, anchor=NW)
+
+        self.addGames()
 
 
+    def editProf(self):
+        turnOnProf(self.account)
+
+    def addGames(self):
+        with open("Files/gamesData.json", "r") as FileHandler:
+            gamesData = json.loads(FileHandler.readline())
+
+        for i in self.account["games"]:
+            self.gamesList.append(gamesData[i])
+
+        hasEndedGames = False
+        posY = 0.43
+
+        self.gamesInfo = []
+        self.gamesCanvas = []
+        listForBtns = [False, False, False]
+
+        for i in range(3):
+            if i + 1 > len(self.gamesList) - self.passedGameCount:
+                self.passedGameCount = len(self.gamesList)
+                hasEndedGames = True
+                break
+
+            curGame = self.gamesList[i + self.passedGameCount]
+
+            gameCanvas = Canvas(self.master, background="#7c98b3", width=600, height=120, highlightthickness=1, highlightcolor="#bccce0")
+
+            gameImg = ImageTk.PhotoImage(Image.open(curGame["image"]).resize((210, 120)))
+            gameCanvas.create_image(0, 0, image=gameImg, anchor=NW)
+            gameCanvas.image = gameImg
+
+            gameCanvas.create_text(220, 10, text=curGame["name"], font="Arial 14", fill="#ffffff", anchor=NW)
+            gameCanvas.create_text(220, 35, text=curGame["description"], font="Arial 10", fill="#ffffff", anchor=NW, width=250)
+            gameCanvas.place(relx=0.175, rely=posY)
+
+            self.gamesInfo.append(curGame)
+            self.gamesCanvas.append(gameCanvas)
+            listForBtns[i] = True
+
+            posY += 0.18
+        print(len(self.gamesList) - self.passedGameCount)
+        if listForBtns[0]:
+            print("TAsd")
+            Button(self.master, width=12, height=2, background='#ff0000', fg="#ffffff", text="Удалить", border=0, command=lambda: self.deleteGame(self.gamesInfo[0])).place(relx=0.555, rely=0.48)
+        if listForBtns[1]:
+            Button(self.master, width=12, height=2, background='#ff0000', fg="#ffffff", text="Удалить", border=0, command=lambda: self.deleteGame(self.gamesInfo[1])).place(relx=0.555, rely=0.48 + 0.18)
+        if listForBtns[2]:
+            Button(self.master, width=12, height=2, background='#ff0000', fg="#ffffff", text="Удалить", border=0, command=lambda: self.deleteGame(self.gamesInfo[2])).place(relx=0.555, rely=0.48 + 0.36)
 
 
+        if not(hasEndedGames):
+            self.passedGameCount += 3
+
+    def deleteGame(self, game):
+        answer = askyesno("Предупреждение", "Вы действительно хотите удалить эту игру?")
+        if answer:
+            print(game["name"])
+            with open("Files/usersData.json", "r") as FileHandler:
+                usersData = json.loads(FileHandler.readline())
+
+            try:
+                with open("Files/usersData.json", "wb") as FileHandler:
+                    json.dump({}, FileHandler)
+            except Exception as e:
+                print("Файл очистился.")
+
+            with open("Files/usersData.json", "w") as FileHandler:
+                for key, val in usersData.items():
+                    if shopHeaderOfficeBtn["text"].lower() == self.account["gameName"]:
+                        usersData[key]["games"].remove(game["name"])
+                        self.account["games"].remove(game["name"])
+                        json.dump(usersData, FileHandler)
+                        turnOnProf(self.account)
+
+
+class EditingProfile:
+    def __init__(self, master: Frame, account):
+        self.master = master
+        self.account = account
+        shopFrame.place_forget()
+        regFrame.place_forget()
+        logFrame.place_forget()
+        gameViewFrame.place_forget()
+        profFrame.place_forget()
+        editProfileFrame.place(relx=0, rely=0.1)
+
+        self.widgets()
+
+    def widgets(self):
+        LOG_BG_COLOR = "#212429"
+        LOG_TEXT_COLOR = "#B8B6B4"
+        LOG_BG_COLOR_ENTRY = "#32353C"
+
+        self.mainCanvas = Canvas(self.master, width=950, height=718, background="#001021", highlightthickness=0)
+        self.mainCanvas.place(relx=0.14, rely=0)
 
 
 
@@ -674,6 +810,9 @@ def turnOnLog():
 def turnOnGameView(game):
     gameView = GameView(gameViewFrame, game)
 
+def turnOnEditingProf(account):
+    editProfile = EditingProfile(editProfileFrame, account=account)
+
 
 if __name__ == '__main__':
     shopRoot = Tk()
@@ -685,6 +824,7 @@ if __name__ == '__main__':
     profFrame = Frame(shopRoot, width=1284, height=718, background=BG_COLOR)
     logFrame = Frame(shopRoot, width=1284, height=718, background=BG_COLOR)
     gameViewFrame = Frame(shopRoot, width=1284, height=718, background=BG_COLOR)
+    editProfileFrame = Frame(shopRoot, width=1284, height=718, background=BG_COLOR)
     shopFrame.place(relx=0, rely=0.1)
 
 
