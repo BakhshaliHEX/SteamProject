@@ -616,7 +616,9 @@ class Registration:
                 "password": password,
                 "description": "Информация отсутствует.",
                 "friends": [],
-                "games": []
+                "games": [],
+                "avatar": "",
+                "requestsOnFriends": []
             }
             usersData[gameName] = slov
             json.dump(usersData, FileHandler)
@@ -697,7 +699,7 @@ class Profile:
 
 
     def editProf(self):
-        turnOnProf(self.account)
+        turnOnEditingProf(self.account)
 
     def addGames(self):
         with open("Files/gamesData.json", "r") as FileHandler:
@@ -775,6 +777,9 @@ class EditingProfile:
     def __init__(self, master: Frame, account):
         self.master = master
         self.account = account
+        self.requestsList = []
+        print(self.account)
+        self.passedRequestCount = 0
         shopFrame.place_forget()
         regFrame.place_forget()
         logFrame.place_forget()
@@ -785,21 +790,200 @@ class EditingProfile:
         self.widgets()
 
     def widgets(self):
-        LOG_BG_COLOR = "#212429"
+        LOG_BG_COLOR = "#001021"
         LOG_TEXT_COLOR = "#B8B6B4"
         LOG_BG_COLOR_ENTRY = "#32353C"
 
         self.mainCanvas = Canvas(self.master, width=950, height=718, background="#001021", highlightthickness=0)
+        self.borderCanvas1 = Canvas(self.master, width=500, height=640, background=LOG_BG_COLOR, highlightthickness=1, highlightcolor="#808080")
+        self.borderCanvas1.place(relx=0.15, rely=0.04)
         self.mainCanvas.place(relx=0.14, rely=0)
 
+        self.borderCanvas1.create_text(70, 30, text="РЕДАКТИРОВАТЬ", font="Arial 30", fill="#ffffff", anchor=NW)
+        self.mainCanvas.create_text(575, 30, text="ЗАПРОСЫ В ДРУЗЬЯ", font="Arial 24", fill="#ffffff", anchor=NW)
 
+        Label(self.master, text="Ваше игровое имя", font="Arial 11", fg=LOG_TEXT_COLOR, anchor=NW, background=LOG_BG_COLOR).place(relx=0.23, rely=0.16)
+        self.gameNameEntry = Entry(self.master, width=30, font="Arial 13", fg="#ffffff", background="#32353C", border=0)
+        self.gameNameEntry.place(relx=0.23, rely=0.196, height=35)
+        self.gameNameEntry.insert(0, acc["gameName"])
+
+        Label(self.master, text="Адрес эл. почты", font="Arial 11", fg=LOG_TEXT_COLOR, anchor=NW, background=LOG_BG_COLOR).place(relx=0.16, rely=0.32)
+        self.emailEntry = Entry(self.master, width=25, font="Arial 13", fg="#ffffff", background="#32353C", border=0)
+        self.emailEntry.place(relx=0.16, rely=0.356, height=35)
+        self.emailEntry.insert(0, acc["email"])
+
+        Label(self.master, text="Описание", font="Arial 11", fg=LOG_TEXT_COLOR, anchor=NW, background=LOG_BG_COLOR).place(relx=0.354, rely=0.32)
+        self.descriptionEntry = Entry(self.master, width=25, font="Arial 13", fg="#ffffff", background="#32353C", border=0)
+        self.descriptionEntry.place(relx=0.354, rely=0.356, height=35)
+        self.descriptionEntry.insert(0, acc["description"])
+
+        Label(self.master, text="Пароль", font="Arial 11", fg=LOG_TEXT_COLOR, anchor=NW, background=LOG_BG_COLOR).place(relx=0.16, rely=0.48)
+        self.passwordEntry = Entry(self.master, width=25, font="Arial 13", fg="#ffffff", background="#32353C", border=0)
+        self.passwordEntry.place(relx=0.16, rely=0.516, height=35)
+        self.passwordEntry.insert(0, acc["password"])
+
+        Label(self.master, text="Я забыл", font="Arial 11", fg=LOG_TEXT_COLOR, anchor=NW, background=LOG_BG_COLOR).place(relx=0.354, rely=0.48)
+        self.smthEntry = Entry(self.master, width=25, font="Arial 13", fg="#ffffff", background="#32353C", border=0)
+        self.smthEntry.place(relx=0.354, rely=0.516, height=35)
+        self.smthEntry.insert(0, acc["password"])
+
+        Label(self.master, text="Аватар", font="Arial 11", fg=LOG_TEXT_COLOR, anchor=NW, background=LOG_BG_COLOR).place(relx=0.225, rely=0.64)
+        Label(self.master, text="(необязательно)", font="Arial 9", fg=LOG_TEXT_COLOR, anchor=NW, background=LOG_BG_COLOR).place(relx=0.2695, rely=0.641)
+        Label(self.master, text="Вставьте ссылку на фото", font="Arial 8", fg=LOG_TEXT_COLOR, anchor=NW, background=LOG_BG_COLOR).place(relx=0.223, rely=0.73)
+        self.avatarEntry = Entry(self.master, width=30, font="Arial 13", fg="#ffffff", background="#32353C", border=0)
+        self.avatarEntry.place(relx=0.225, rely=0.676, height=35)
+        self.avatarEntry.insert(0, acc["avatar"])
+
+        btnImg = ImageTk.PhotoImage(Image.open("images/buttonGradient.png").resize((403, 38)))
+        self.confirmBtn = Button(self.master, image=btnImg, font="Arial 11", border=0, borderwidth=0, width=400, height=35, fg="#000000", command=self.confirmChanges)
+        self.confirmBtn.image = btnImg
+        self.confirmBtn.place(relx=0.18, rely=0.8)
+        Label(self.master, text="Подтвердить", fg="#ffffff", font="Arial 11", background="#4A90E5").place(relx=0.3, rely=0.809)
+
+        self.friendsCanvas = Canvas(self.master, width=350, height=570, bg=LOG_BG_COLOR, highlightthickness=1, highlightcolor="#808080")
+        self.friendsCanvas.place(relx=0.58, rely=0.13)
+
+        if len(self.account["requestsOnFriends"]) > 4:
+            Button(self.master, width=3, height=1, border=0, background="#001021", fg="#ffffff", text="<--").place(relx=0.555, rely=0.52)
+            Button(self.master, width=3, height=1, border=0, background="#001021", fg="#ffffff", text="-->", command=self.addRequests).place(relx=0.857, rely=0.52)
+
+
+        self.addRequests()
+
+
+    def confirmChanges(self):
+        gameName = self.gameNameEntry.get()
+        email = self.emailEntry.get()
+        description = self.descriptionEntry.get()
+        password = self.descriptionEntry.get()
+        avatar = self.avatarEntry.get()
+
+        if self.checkEntries(gameName, "игровом имени", 4, 24): return
+        if self.checkEntries(email, "адресе эл. почты", 4, 32): return
+        if self.checkEntries(description, "описании", 6, 50): return
+        if self.checkEntries(password, "пароле", 4, 32): return
+
+        try:
+            if avatar:
+                img = ImageTk.PhotoImage(Image.open(f"{avatar}").resize((300, 300)))
+        except Exception as e:
+            showerror("Ошибка", "Ссылка на аватар некорректная.")
+            return
+
+
+    def addRequests(self):
+        with open("Files/usersData.json", "r") as FileHandler:
+            usersData = json.loads(FileHandler.readline())
+
+        for i in self.account["requestsOnFriends"]:
+            self.requestsList.append(i)
+
+        self.reqHumans = []
+        for i in self.requestsList:
+            self.reqHumans.append(usersData[i])
+        print(self.reqHumans)
+
+
+        hasEndedGames = False
+        posY = 0.131
+
+        self.requestsInfo = []
+        self.requestsCanvas = []
+        listForBtns = [False, False, False, False, False]
+
+        for i in range(4):
+            if i + 1 > len(self.reqHumans) - self.passedRequestCount:
+                self.passedRequestCount = len(self.reqHumans)
+                hasEndedGames = True
+                break
+
+            curRequest = self.reqHumans[i + self.passedRequestCount]
+
+            requestCanvas = Canvas(self.master, width=350, height=100, background="#2C365E", highlightthickness=0)
+            requestCanvas.place(relx=0.581, rely=posY)
+
+            requestCanvas.create_rectangle(0, 0, 100, 100, fill="#202020")
+            requestCanvas.create_text(115, 5, text=curRequest["gameName"], anchor=NW, fill="#ffffff", font="Arial 22")
+
+            self.requestsInfo.append(curRequest)
+
+
+
+            listForBtns[i] = True
+
+            posY += 0.18
+
+        print(len(self.reqHumans) - self.passedRequestCount)
+        if listForBtns[0]:
+            Button(self.master, width=12, background='#47A76A', fg="#ffffff", text="Принять", border=0, command=lambda: self.acceptRequest(self.requestsInfo[0])).place(height=35, relx=0.67, rely=0.2)
+            Button(self.master, width=12, background='#9B2D30', fg="#ffffff", text="Отклонить", border=0, command=lambda: self.rejectRequest(self.requestsInfo[0])).place(height=35, relx=0.77, rely=0.2)
+        if listForBtns[1]:
+            Button(self.master, width=12, background='#47A76A', fg="#ffffff", text="Принять", border=0, command=lambda: self.acceptRequest(self.requestsInfo[1])).place(height=35, relx=0.67, rely=0.2 + 0.18)
+            Button(self.master, width=12, background='#9B2D30', fg="#ffffff", text="Отклонить", border=0, command=lambda: self.rejectRequest(self.requestsInfo[1])).place(height=35, relx=0.77, rely=0.2 + 0.18)
+        if listForBtns[2]:
+            Button(self.master, width=10, background='#47A76A', fg="#ffffff", text="Принять", border=0, command=lambda: self.acceptRequest(self.requestsInfo[2])).place(height=35, relx=0.67, rely=0.2 + 0.36)
+            Button(self.master, width=12, background='#9B2D30', fg="#ffffff", text="Отклонить", border=0, command=lambda: self.rejectRequest(self.requestsInfo[2])).place(height=35, relx=0.77, rely=0.2 + 0.36)
+        if listForBtns[3]:
+            Button(self.master, width=12, background='#47A76A', fg="#ffffff", text="Принять", border=0, command=lambda: self.acceptRequest(self.requestsInfo[3])).place(height=35, relx=0.67, rely=0.2 + 0.36)
+            Button(self.master, width=12, background='#9B2D30', fg="#ffffff", text="Отклонить", border=0, command=lambda: self.rejectRequest(self.requestsInfo[3])).place(height=35, relx=0.77, rely=0.2 + 0.36)
+
+        if not(hasEndedGames):
+            self.passedRequestCount += 3
+
+    def acceptRequest(self, human):
+        with open("Files/usersData.json", "r") as FileHandler:
+            usersData = json.loads(FileHandler.readline())
+
+        print(human["gameName"])
+        usersData[self.account["gameName"]]["requestsOnFriends"].remove(human["gameName"])
+        usersData[self.account["gameName"]]["friends"].append(human["gameName"])
+        self.account = usersData[self.account["gameName"]]
+
+        try:
+            with open("Files/usersData.json", "wb") as FileHandler:
+                json.dump({}, FileHandler)
+        except Exception as e:
+            print("Файл очистился.")
+
+        with open("Files/usersData.json", "w") as FileHandler:
+            json.dump(usersData, FileHandler)
+
+        turnOnEditingProf(self.account)
+
+    def rejectRequest(self, human):
+        with open("Files/usersData.json", "r") as FileHandler:
+            usersData = json.loads(FileHandler.readline())
+
+        usersData[self.account["gameName"]]["requestsOnFriends"].remove(human["gameName"])
+        self.account = usersData[self.account["gameName"]]
+        print(human["gameName"])
+
+        try:
+            with open("Files/usersData.json", "wb") as FileHandler:
+                json.dump({}, FileHandler)
+        except Exception as e:
+            print("Файл очистился.")
+
+        with open("Files/usersData.json", "w") as FileHandler:
+            json.dump(usersData, FileHandler)
+
+        turnOnEditingProf(self.account)
+
+
+    def checkEntries(self, value, valueInStr, minL, maxL):
+        if len(value) < 4 or len(value) > 18:
+            showerror("Ошибка", f"Количество символов в {valueInStr} должно быть больше {minL} и меньше {maxL}.")
+            return True
+        return False
 
 
 def turnOnUser():
     registr = Registration(regFrame)
+    activeBtnUnderline(shopHeaderOfficeBtn, shopHeaderShopBtn)
 
 def turnOnShop():
     shop = Shop(shopFrame)
+    activeBtnUnderline(shopHeaderShopBtn, shopHeaderOfficeBtn)
 
 def turnOnProf(account, cong=False):
     profile = Profile(profFrame, account=account, isCong=cong)
@@ -811,6 +995,8 @@ def turnOnGameView(game):
     gameView = GameView(gameViewFrame, game)
 
 def turnOnEditingProf(account):
+    # for widget in editProfileFrame.winfo_children():
+    #     widget.destroy()
     editProfile = EditingProfile(editProfileFrame, account=account)
 
 
@@ -837,5 +1023,15 @@ if __name__ == '__main__':
     shopHeaderLibraryBtn.place(relx=0.45, rely=0.036)
     shopHeaderOfficeBtn.place(relx=0.585, rely=0.036)
     activeBtnUnderline(shopHeaderShopBtn, shopHeaderOfficeBtn)
-    shop = Shop(shopFrame)
+    # shop = Shop(shopFrame)
+
+    with open("Files/usersData.json", "r") as FileHandler:
+        usersData = json.loads(FileHandler.readline())
+
+    acc = {}
+    for key, val in usersData.items():
+        if key == "baxaba123":
+            acc = val
+
+    turnOnEditingProf(acc)
     shopRoot.mainloop()
